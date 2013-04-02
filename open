@@ -1,0 +1,56 @@
+#!/bin/bash
+#####################
+# like MacOSX "open" command (like the old konqueror or even better )))
+# if the argument is a folder or there is no arguments - open a filemanager (e.g. dolphin)
+# if it's a file - open it with e.g. okular (default)
+# open text files with e.g. vi etc.
+#####################
+#***********************
+#file types (like in file-output), one can use "or"(|) (write "'--'" if not defined):
+ftype="PostScript video GIMP image audio '--' E-book RAR archiv '--' Office|OpenDocument HTML PDF text"
+#file extension (write "'--'" if not defined)
+exten=("ps" "avi|mkv|wmv|mpg|mp4" "xcf" "gif|png|jpg" "mp3" "qti" "mobi|epub" "rar" "zip|7z" "xoj" "ppt|odg|oxt" "html" "pdf" "txt")
+#file opener (sorted according to ftype) 
+opener=(okular vlc gimp gwenview amarok qtiplot ebook-viewer "unrar x" ark xournal ooffice opera okular vi)
+# default opener 
+openfolder="dolphin"
+openfile="okular"
+opentext="vi"
+#***********************
+# some commands
+FILE="file"
+GREP="egrep"
+#***********************
+if [ $# -gt 0 ]; then
+  for i in "$@"; do
+    name=$i
+    echo $name
+    if [ -f "$name" ]; then
+      filetyp=$($FILE "$name")
+      filetyp=${filetyp/"$name:"}
+      echo $filetyp
+      let j=0
+      next=''
+      for types in $ftype; do
+        ft=$(echo "$filetyp" | $GREP -i $types)
+        ext=$(echo "$name" | $GREP -i .${exten[$j]}$) 
+        if [[ -n "$ft" || -n "$ext" ]]; then
+          ${opener[$j]} "$name"
+          next='1'
+          break
+        fi
+        let j=$j+1
+      done
+      if [ -n "$next" ]; then
+        continue
+      fi
+      $openfile "$name"
+    elif [ -d "$name" ]; then
+      $openfolder "$name"
+    else
+      $opentext "$name"
+    fi
+  done
+else
+  $openfolder "$PWD"
+fi
