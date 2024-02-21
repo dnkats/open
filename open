@@ -7,19 +7,28 @@
 #####################
 #***********************
 #file types (like in file-output), one can use "or"(|) (write "'--'" if not defined):
-ftype="PostScript video GIMP image audio '--' E-book RAR archiv '--' Office|OpenDocument HTML PDF text"
+ftype="PostScript video GIMP image audio '--' RAR archiv '--' Office|OpenDocument HTML PDF text"
 #file extension (write "'--'" if not defined)
-exten=("ps" "avi|mkv|wmv|mpg|mp4" "xcf" "gif|png|jpg" "mp3" "qti" "mobi|epub" "rar" "zip|7z" "xoj" "ppt|odg|oxt" "html" "pdf" "txt")
+exten=("ps" "avi|mkv|wmv|mpg|mp4" "xcf" "gif|png|jpg" "mp3" "qti" "rar" "zip|7z" "xoj" "ppt|odg|oxt" "html" "pdf" "txt")
 #file opener (sorted according to ftype) 
-opener=(okular vlc gimp gwenview amarok qtiplot ebook-viewer "unrar x" ark xournal ooffice opera okular vi)
-# default opener 
-openfolder="dolphin"
-openfile="okular"
-opentext="vi"
+if command -v explorer.exe &> /dev/null; then 
+  # WSL
+  opener=(sumatra vlc gimp i_view32 amarok qtiplot "7z x" "7z x" xournal explorer.exe explorer.exe sumatra vim)
+  # default opener 
+  openfolder="explorer.exe"
+  openfile="explorer.exe"
+else 
+  # Linux
+  opener=(okular vlc gimp gwenview amarok qtiplot "unrar x" ark xournal ooffice opera okular vi)
+  # default opener 
+  openfolder="dolphin"
+  openfile="okular"
+fi
+opentext="vim"
 #***********************
 # some commands
 FILE="file"
-GREP="egrep"
+GREP="grep -E"
 #***********************
 if [ $# -gt 0 ]; then
   for i in "$@"; do
@@ -33,7 +42,7 @@ if [ $# -gt 0 ]; then
       next=''
       for types in $ftype; do
         ft=$(echo "$filetyp" | $GREP -i $types)
-        ext=$(echo "$name" | $GREP -i .${exten[$j]}$) 
+        ext=$(echo "$name" | $GREP -i "\.(${exten[$j]})\$") 
         if [[ -n "$ft" || -n "$ext" ]]; then
           ${opener[$j]} "$name"
           next='1'
@@ -52,5 +61,5 @@ if [ $# -gt 0 ]; then
     fi
   done
 else
-  $openfolder "$PWD"
+  $openfolder .
 fi
